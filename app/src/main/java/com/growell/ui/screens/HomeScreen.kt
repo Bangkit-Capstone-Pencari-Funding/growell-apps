@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +36,7 @@ fun HomeScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(24.dp, 40.dp, 24.dp, 0.dp)
+                    .padding(24.dp, 0.dp, 24.dp, 0.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.Start
 
@@ -44,6 +45,7 @@ fun HomeScreen() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
+                        .padding(top = 30.dp)
                         .fillMaxWidth()
                 ) {
                     Image(
@@ -130,12 +132,73 @@ fun HomeScreen() {
                     )
                 }
                 Spacer(modifier = Modifier.padding(15.dp))
+                Text(
+                    "Favorites Recipe",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = Color(0xFF323643),
+                    fontFamily = Poppins
+                )
                 LazyRow {
                     item { RecipeListItem() }
                     item { RecipeListItem() }
                     item { RecipeListItem() }
                 }
-
+                Spacer(modifier = Modifier.padding(25.dp))
+            }
+        },
+        bottomBar = {
+            Box {
+                BottomNavigation(
+                    backgroundColor = Color.White,
+                    contentColor = Color.Black,
+                    elevation = 8.dp
+                ) {
+                    BottomNavigationItem(
+                        icon = { Icon(painter = painterResource(R.drawable.home_icon), contentDescription = null) },
+                        selected = false,
+                        onClick = {}
+                    )
+                    BottomNavigationItem(
+                        icon = { Icon(painter = painterResource(R.drawable.article_icon), contentDescription = null) },
+                        selected = false,
+                        onClick = {}
+                    )
+                    BottomNavigationItem(
+                        icon = {
+                            Icon(
+                                Icons.Default.Favorite,
+                                contentDescription = null,
+                                tint = Color.Transparent
+                            )
+                        },
+                        selected = false,
+                        enabled = false,
+                        onClick = {},
+                        alwaysShowLabel = false, // Hides label
+                    )
+                    BottomNavigationItem(
+                        icon = { Icon(painter = painterResource(R.drawable.diary_icon), contentDescription = null) },
+                        selected = false,
+                        onClick = {}
+                    )
+                    BottomNavigationItem(
+                        icon = { Icon(painter = painterResource(R.drawable.profile_icon), contentDescription = null) },
+                        selected = false,
+                        onClick = {}
+                    )
+                }
+                FloatingActionButton(
+                    onClick = {},
+                    backgroundColor = Color(0xFF43ADA6),
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = (-30).dp)
+                ) {
+                    Icon(painter = painterResource(R.drawable.scan_icon), contentDescription = null)
+                }
             }
         }
     )

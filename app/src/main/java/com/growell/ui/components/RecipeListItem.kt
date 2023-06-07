@@ -1,11 +1,13 @@
 package com.growell.ui.components
 
+import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +60,30 @@ fun RecipeListItem(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(Color.White)
+                        .align(Alignment.TopStart)
+                        .padding(horizontal = 16.dp, vertical = 5.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "5.0",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+                        Icon(
+                            painter = painterResource(R.drawable.star_icon),
+                            contentDescription = "icon_star",
+                            tint = Color(0xFFFED235)
+                        )
+                    }
+                }
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -100,7 +126,62 @@ fun RecipeListItem(
                     fontSize = 12.sp,
                     fontFamily = Poppins
                 )
-
+            }
+            Spacer(modifier = Modifier.padding(4.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(color = Color(0xFFD9FFEA), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 15.dp)
+                    ) {
+                        Text(
+                            "Vegetable",
+                            color = Color(0xFF31817C),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = Poppins
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(color = Color(0xFFD9FFEA), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 15.dp)
+                    ) {
+                        Text(
+                            "Bread",
+                            color = Color(0xFF31817C),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = Poppins
+                        )
+                    }
+                }
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .width(74.dp)
+                        .height(22.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF029094)),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        text = "Cook",
+                        style = MaterialTheme.typography.button.copy(
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
             }
         }
     }
