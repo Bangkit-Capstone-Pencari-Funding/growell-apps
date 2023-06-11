@@ -3,9 +3,10 @@ package com.growell.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +22,8 @@ import com.growell.ui.theme.Poppins
 
 @Composable
 fun SignInScreen() {
+    val emailState = remember { mutableStateOf("") }
+    val passwordState = remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -54,8 +57,8 @@ fun SignInScreen() {
                 textAlign = TextAlign.Start
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = emailState.value,
+                onValueChange = { emailState.value = it },
                 label = { Text("example@gmail.com") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -78,8 +81,8 @@ fun SignInScreen() {
                 textAlign = TextAlign.Start
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = passwordState.value,
+                onValueChange = { passwordState.value = it },
                 label = { Text("enter your password") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -95,7 +98,8 @@ fun SignInScreen() {
             )
             Spacer(modifier = Modifier.padding(bottom = 78.dp))
             Button(
-                onClick = {},
+                onClick = {
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6)) // Warna latar belakang #43ADA6
             ) {
