@@ -1,26 +1,46 @@
 package com.growell.ui.screens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.growell.R
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.LoginRequest
+import com.growell.model.RegisterRequest
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(navController: NavController) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,9 +67,9 @@ fun SignUpScreen() {
         }
         Column(modifier = Modifier.padding(horizontal = 40.dp)) {
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Enter Your Username") },
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Enter Your name") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -64,15 +84,15 @@ fun SignUpScreen() {
             )
             Spacer(modifier = Modifier.padding(bottom = 20.dp))
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = email,
+                onValueChange = { email = it },
                 label = { Text("Enter Your Email") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,
@@ -81,15 +101,15 @@ fun SignUpScreen() {
             )
             Spacer(modifier = Modifier.padding(bottom = 20.dp))
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = phone,
+                onValueChange = { phone = it },
                 label = { Text("Enter Your Phone Number") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,
@@ -98,8 +118,8 @@ fun SignUpScreen() {
             )
             Spacer(modifier = Modifier.padding(bottom = 20.dp))
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = password,
+                onValueChange = {password = it},
                 label = { Text("Enter Your Password") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,7 +127,6 @@ fun SignUpScreen() {
                 shape = RoundedCornerShape(10.dp),
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,
@@ -116,7 +135,17 @@ fun SignUpScreen() {
             )
             Spacer(modifier = Modifier.padding(bottom = 40.dp))
             Button(
-                onClick = {},
+                onClick = {
+                    performRegister(name, phone, email, password,
+                        onSuccess = { token ->
+                            SharedPrefsUtil.saveToken(context, token)
+                            navController.navigate("home_screen")
+                        },
+                        onFailure = {
+                            Toast.makeText(context, "Register Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6)) // Warna latar belakang #43ADA6
             ) {
@@ -177,7 +206,10 @@ fun SignUpScreen() {
                     color = Color(0xFF43ADA6),
                     fontSize = 16.sp,
                     fontFamily = Poppins,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clickable {
+                        navController.navigate("login_screen")
+                    }
                 )
             }
             Spacer(modifier = Modifier.padding(bottom = 50.dp))
@@ -185,11 +217,43 @@ fun SignUpScreen() {
     }
 }
 
+fun performRegister(
+    name: String,
+    phone: String,
+    email: String,
+    password: String,
+    onSuccess: (String) -> Unit,
+    onFailure: () -> Unit
+) {
+    val registerRequest = RegisterRequest(name, phone, email, password)
 
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun SignUpScreenPreview() {
-    GrowellTheme {
-        SignUpScreen()
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = ApiClient.apiService.register(registerRequest)
+            if (response.isSuccessful) {
+                val registerResponse = response.body()
+                val token = registerResponse?.payload?.token
+                withContext(Dispatchers.Main) {
+                    onSuccess(token ?: "")
+                }
+                Log.d("register", "Register berhasil $token")
+
+            } else {
+                withContext(Dispatchers.Main) {
+                    Log.d("register", "Register gagal: ${response.errorBody()?.string()}")
+                    onFailure()
+                }
+            }
+
+            // Lakukan sesuatu dengan token, seperti menyimpannya di Preferences
+            // atau melanjutkan ke halaman berikutnya.
+
+        } catch (e: Exception) {
+            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
+            withContext(Dispatchers.Main) {
+                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
+                Log.d("login", "Login gagal ${e.message}")
+            }
+        }
     }
 }

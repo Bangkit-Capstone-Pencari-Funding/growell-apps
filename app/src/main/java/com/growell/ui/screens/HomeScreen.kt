@@ -1,9 +1,11 @@
 package com.growell.ui.screens
 
+import android.util.Log
 import android.widget.ScrollView
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -13,23 +15,66 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.auth0.android.jwt.JWT
 import com.growell.R
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.Recipe
 import com.growell.ui.components.RecipeListItem
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
+    val context = LocalContext.current
+    val savedToken = SharedPrefsUtil.getToken(context)
+
+    DisposableEffect(Unit) {
+        if (savedToken.isNullOrEmpty()) {
+            navController.navigate("login_screen") {
+                popUpTo("home_screen") { inclusive = true }
+            }
+        }
+        onDispose { }
+    }
+
+    val currentUser by remember {
+        mutableStateOf(decodeJwtToken(savedToken))
+    }
+
+    var recipes by remember {
+        mutableStateOf(emptyList<Recipe>())
+    }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = ApiClient.getRecipes(savedToken)
+            if (response.isSuccessful == true) {
+                val recipeList = response.body()?.payload?.recipe
+                Log.d("List Recipe", "list Recipe: $recipeList")
+                if (!recipeList.isNullOrEmpty()) {
+                    recipes = recipeList
+                }
+            } else {
+                // Handle error response
+            }
+        } catch (e: Exception) {
+            // Handle exception
+        }
+    }
+
     Scaffold(
         content = { innerPadding ->
             Column(
@@ -72,7 +117,7 @@ fun HomeScreen() {
                     color = Color(0xFF371B34)
                 )
                 Text(
-                    "Sarina!",
+                    currentUser,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = Poppins,
@@ -140,11 +185,30 @@ fun HomeScreen() {
                     fontFamily = Poppins
                 )
                 LazyRow {
-                    item { RecipeListItem() }
-                    item { RecipeListItem() }
-                    item { RecipeListItem() }
+                    items(recipes) { recipe ->
+                        RecipeListItem(
+                            name = recipe.name,
+                            rating = recipe.rating.toString(),
+                            image = recipe.picture
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.padding(25.dp))
+                Button(
+                    onClick = {
+                        SharedPrefsUtil.clearToken(context)
+                        navController.navigate("login_screen") {
+                            popUpTo("login_screen") { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(Color.Red)
+                ) {
+                    Text(
+                        text = "Logout",
+                        color = Color.White
+                    )
+                }
             }
         },
         bottomBar = {
@@ -155,12 +219,22 @@ fun HomeScreen() {
                     elevation = 8.dp
                 ) {
                     BottomNavigationItem(
-                        icon = { Icon(painter = painterResource(R.drawable.home_icon), contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.home_icon),
+                                contentDescription = null
+                            )
+                        },
                         selected = false,
                         onClick = {}
                     )
                     BottomNavigationItem(
-                        icon = { Icon(painter = painterResource(R.drawable.article_icon), contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.article_icon),
+                                contentDescription = null
+                            )
+                        },
                         selected = false,
                         onClick = {}
                     )
@@ -178,12 +252,22 @@ fun HomeScreen() {
                         alwaysShowLabel = false, // Hides label
                     )
                     BottomNavigationItem(
-                        icon = { Icon(painter = painterResource(R.drawable.diary_icon), contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.diary_icon),
+                                contentDescription = null
+                            )
+                        },
                         selected = false,
                         onClick = {}
                     )
                     BottomNavigationItem(
-                        icon = { Icon(painter = painterResource(R.drawable.profile_icon), contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.profile_icon),
+                                contentDescription = null
+                            )
+                        },
                         selected = false,
                         onClick = {}
                     )
@@ -204,11 +288,16 @@ fun HomeScreen() {
     )
 }
 
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun HomeScreenPreview() {
-    GrowellTheme {
-        HomeScreen()
+private fun decodeJwtToken(token: String?): String {
+    return if (!token.isNullOrEmpty()) {
+        try {
+            val decodedToken = JWT(token)
+            val username = decodedToken.getClaim("name").asString()
+            username ?: "User"
+        } catch (e: Exception) {
+            "User"
+        }
+    } else {
+        "User"
     }
 }

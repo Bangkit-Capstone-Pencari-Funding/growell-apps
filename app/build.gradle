@@ -64,4 +64,13 @@ dependencies {
 
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0'
+
+    implementation 'androidx.preference:preference-ktx:1.1.1'
+
+    // JWT DECODE
+    implementation 'com.auth0.android:jwtdecode:2.0.0'
 }

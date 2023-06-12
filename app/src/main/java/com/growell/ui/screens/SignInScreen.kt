@@ -1,29 +1,52 @@
 package com.growell.ui.screens
 
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.Navigation.createNavigateOnClickListener
+import androidx.navigation.Navigation.findNavController
 import com.growell.R
-import com.growell.ui.theme.GrowellTheme
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.LoginRequest
 import com.growell.ui.theme.Poppins
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun SignInScreen() {
+fun SignInScreen(navController: NavController) {
+    val context = LocalContext.current
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
+
+    DisposableEffect(Unit) {
+        val savedToken = SharedPrefsUtil.getToken(context)
+        if (!savedToken.isNullOrEmpty()) {
+            navController.navigate("home_screen") {
+                popUpTo("login_screen") { inclusive = true }
+            }
+        }
+
+        onDispose { }
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,8 +84,7 @@ fun SignInScreen() {
                 onValueChange = { emailState.value = it },
                 label = { Text("example@gmail.com") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
 //            keyboardOptions = KeyboardOptions(email = true),
@@ -85,8 +107,7 @@ fun SignInScreen() {
                 onValueChange = { passwordState.value = it },
                 label = { Text("enter your password") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
 //            keyboardOptions = KeyboardOptions(email = true),
@@ -99,9 +120,18 @@ fun SignInScreen() {
             Spacer(modifier = Modifier.padding(bottom = 78.dp))
             Button(
                 onClick = {
+                    performLogin(emailState.value, passwordState.value,
+                        onSuccess = { token ->
+                            SharedPrefsUtil.saveToken(context, token)
+                            navController.navigate("home_screen")
+                        },
+                        onFailure = {
+                            Toast.makeText(context, "Login Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6)) // Warna latar belakang #43ADA6
+                colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6))
             ) {
                 Text(
                     text = "Login",
@@ -160,7 +190,10 @@ fun SignInScreen() {
                     color = Color(0xFF43ADA6),
                     fontSize = 16.sp,
                     fontFamily = Poppins,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clickable{
+                        navController.navigate("register_screen")
+                    }
                 )
             }
             Spacer(modifier = Modifier.padding(bottom = 50.dp))
@@ -168,11 +201,41 @@ fun SignInScreen() {
     }
 }
 
+fun performLogin(
+    email: String,
+    password: String,
+    onSuccess: (String) -> Unit,
+    onFailure: () -> Unit
+) {
+    val loginRequest = LoginRequest("rahmat", email, password)
 
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun SignInScreenPreview() {
-    GrowellTheme {
-        SignInScreen()
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = ApiClient.apiService.login(loginRequest)
+            if (response.isSuccessful) {
+                val loginResponse = response.body()
+                val token = loginResponse?.payload?.token
+                withContext(Dispatchers.Main) {
+                    onSuccess(token ?: "")
+                }
+                Log.d("login", "Login berhasil $token")
+
+            } else {
+                withContext(Dispatchers.Main) {
+                    Log.d("login", "Login gagal: ${response.errorBody()?.string()}")
+                    onFailure()
+                }
+            }
+
+            // Lakukan sesuatu dengan token, seperti menyimpannya di Preferences
+            // atau melanjutkan ke halaman berikutnya.
+
+        } catch (e: Exception) {
+            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
+            withContext(Dispatchers.Main) {
+                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
+                Log.d("login", "Login gagal ${e.message}")
+            }
+        }
     }
 }

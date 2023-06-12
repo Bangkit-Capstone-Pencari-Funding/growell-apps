@@ -34,9 +34,9 @@ import com.growell.ui.theme.Poppins
 
 @Composable
 fun RecipeListItem(
-//    name: String?,
-//    rating: String?,
-//    image: String?,
+    name: String?,
+    rating: String?,
+    image: String?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -69,12 +69,14 @@ fun RecipeListItem(
                         .padding(horizontal = 16.dp, vertical = 5.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "5.0",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
+                        if (rating != null) {
+                            Text(
+                                text = rating,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
                         Spacer(modifier = Modifier.padding(horizontal = 2.dp))
                         Icon(
                             painter = painterResource(R.drawable.star_icon),
@@ -92,12 +94,14 @@ fun RecipeListItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 13.dp)
             ) {
-                Text(
-                    text = "Sandwich",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = Poppins
-                )
+                if (name != null) {
+                    Text(
+                        text = name,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Poppins
+                    )
+                }
                 Spacer(modifier = Modifier.padding(2.dp))
                 Image(
                     painter = painterResource(R.drawable.icon_checklist),
@@ -184,13 +188,5 @@ fun RecipeListItem(
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RecipeItemListPreview() {
-    GrowellTheme {
-        RecipeListItem()
     }
 }
