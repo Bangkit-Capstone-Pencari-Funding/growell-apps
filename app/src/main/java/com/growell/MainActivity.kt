@@ -62,6 +62,9 @@ fun Navigation() {
         composable("edit_profile_screen") {
             EditProfileScreen(navController)
         }
+        composable("add_child_screen") {
+            AddChildScreen(navController)
+        }
         composable("detail_recipe_screen/{recipeId}") { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getString("recipeId")
             DetailRecipeScreen(recipeId = recipeId)

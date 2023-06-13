@@ -32,4 +32,10 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: UpdateProfileRequest
     ): Response<UpdateProfileResponse>
+
+    @POST("profile/child")
+    suspend fun createChild(
+        @Header("Authorization") token: String,
+        @Body request: CreateChildRequest
+    ): Response<CreateChildResponse>
 }

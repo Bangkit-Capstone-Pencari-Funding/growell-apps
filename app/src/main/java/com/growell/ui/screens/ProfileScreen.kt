@@ -103,9 +103,12 @@ fun ProfileScreen(navController: NavController, currentRoute: String) {
                         )
                     }
                     Spacer(modifier = Modifier.padding(bottom = 32.dp))
-                    Column(modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp).clickable{
-                        navController.navigate("edit_profile_screen")
-                    }) {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 32.dp, vertical = 16.dp)
+                            .clickable {
+                                navController.navigate("edit_profile_screen")
+                            }) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
@@ -237,12 +240,14 @@ fun ProfileScreen(navController: NavController, currentRoute: String) {
                                 .fillMaxWidth()
 
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable{
-                                SharedPrefsUtil.clearToken(context)
-                                navController.navigate("login_screen") {
-                                    popUpTo("login_screen") { inclusive = true }
-                                }
-                            }) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable {
+                                    SharedPrefsUtil.clearToken(context)
+                                    navController.navigate("login_screen") {
+                                        popUpTo("login_screen") { inclusive = true }
+                                    }
+                                }) {
                                 Image(
                                     painter = painterResource(R.drawable.logout_icon),
                                     contentDescription = "edit_profile_icon",
@@ -265,7 +270,9 @@ fun ProfileScreen(navController: NavController, currentRoute: String) {
                         Divider()
                     }
                     Button(
-                        onClick = {},
+                        onClick = {
+                            navController.navigate("add_child_screen")
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 30.dp),
