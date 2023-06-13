@@ -3,17 +3,16 @@ package com.growell.model
 data class Recipe(
     val id: String,
     val name: String,
-    val targetAge: Int,
-    val estimatedTime: Int,
+    val target_age: Int,
+    val estimated_time: Int,
     val rating: Int,
     val picture: String,
-    val howTo: String,
+    val how_to: String,
     val tools: List<String>?,
     val description: String,
     val createdAt: String,
     val updatedAt: String
 )
-
 data class RecipeResponse(
     val payload: PayloadRecipe
 )
@@ -21,3 +20,4 @@ data class RecipeResponse(
 data class PayloadRecipe(
     val recipe: List<Recipe>
 )
+

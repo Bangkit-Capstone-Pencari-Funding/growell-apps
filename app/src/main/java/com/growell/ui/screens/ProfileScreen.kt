@@ -1,27 +1,64 @@
 package com.growell.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.growell.R
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.DetailRecipeResponse
+import com.growell.model.ProfileResponse
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController: NavController, currentRoute: String) {
+    val context = LocalContext.current
+
+    val savedToken = SharedPrefsUtil.getToken(context)
+    var profile by remember { mutableStateOf<ProfileResponse?>(null) }
+
+    DisposableEffect(Unit) {
+        if (savedToken.isNullOrEmpty()) {
+            navController.navigate("login_screen") {
+                popUpTo("home_screen") { inclusive = true }
+            }
+        }
+        onDispose { }
+    }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = ApiClient.getProfile(savedToken)
+            if (response.isSuccessful) {
+                val profileFromResponse = response.body()
+                Log.d("Profile", "Profile: $profileFromResponse")
+                profile = profileFromResponse
+            } else {
+                // Handle error response
+            }
+        } catch (e: Exception) {
+            // Handle exception
+        }
+    }
+
     GrowellTheme(darkTheme = false) {
         Scaffold(
             content = {
@@ -47,17 +84,28 @@ fun ProfileScreen() {
                         contentDescription = "profile_photo"
                     )
                     Spacer(modifier = Modifier.padding(bottom = 20.dp))
-                    Text(
-                        "Amelia Andandi",
-                        color = Color(0xFF505357),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        fontFamily = Poppins
-                    )
+                    profile?.payload?.result?.name?.let { it1 ->
+                        Text(
+                            it1,
+                            color = Color(0xFF505357),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            fontFamily = Poppins
+                        )
+                    }
                     Spacer(modifier = Modifier.padding(bottom = 2.dp))
-                    Text("amelia@email.com", color = Color(0xFFADB5BD), fontSize = 14.sp, fontFamily = Poppins)
+                    profile?.payload?.result?.email?.let { it1 ->
+                        Text(
+                            it1,
+                            color = Color(0xFFADB5BD),
+                            fontSize = 14.sp,
+                            fontFamily = Poppins
+                        )
+                    }
                     Spacer(modifier = Modifier.padding(bottom = 32.dp))
-                    Column(modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp).clickable{
+                        navController.navigate("edit_profile_screen")
+                    }) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
@@ -189,7 +237,12 @@ fun ProfileScreen() {
                                 .fillMaxWidth()
 
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable{
+                                SharedPrefsUtil.clearToken(context)
+                                navController.navigate("login_screen") {
+                                    popUpTo("login_screen") { inclusive = true }
+                                }
+                            }) {
                                 Image(
                                     painter = painterResource(R.drawable.logout_icon),
                                     contentDescription = "edit_profile_icon",
@@ -213,8 +266,10 @@ fun ProfileScreen() {
                     }
                     Button(
                         onClick = {},
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6)) // Warna latar belakang #43ADA6
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 30.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6))
                     ) {
                         Text(
                             text = "Add Child",
@@ -235,11 +290,16 @@ fun ProfileScreen() {
                             icon = {
                                 Icon(
                                     painter = painterResource(R.drawable.home_icon),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = if (currentRoute == "home_screen") Color(0xFF43ADA6) else Color.Gray
                                 )
                             },
-                            selected = false,
-                            onClick = {}
+                            selected = currentRoute == "home_screen",
+                            onClick = {
+                                navController.navigate("home_screen") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                }
+                            }
                         )
                         BottomNavigationItem(
                             icon = {
@@ -268,21 +328,31 @@ fun ProfileScreen() {
                             icon = {
                                 Icon(
                                     painter = painterResource(R.drawable.diary_icon),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = if (currentRoute == "diary_screen") Color(0xFF43ADA6) else Color.Gray
                                 )
                             },
-                            selected = false,
-                            onClick = {}
+                            selected = currentRoute == "diary_screen",
+                            onClick = {
+                                navController.navigate("diary_screen") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                }
+                            }
                         )
                         BottomNavigationItem(
                             icon = {
                                 Icon(
                                     painter = painterResource(R.drawable.profile_icon),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = if (currentRoute == "profile_screen") Color(0xFF43ADA6) else Color.Gray
                                 )
                             },
-                            selected = false,
-                            onClick = {}
+                            selected = currentRoute == "profile_screen",
+                            onClick = {
+                                navController.navigate("profile_screen") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                }
+                            }
                         )
                     }
                     FloatingActionButton(
@@ -302,14 +372,5 @@ fun ProfileScreen() {
                 }
             }
         )
-    }
-}
-
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun ProfileScreenPreview() {
-    GrowellTheme(darkTheme = false) {
-        ProfileScreen()
     }
 }

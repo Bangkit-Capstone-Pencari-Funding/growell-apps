@@ -33,14 +33,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
+import androidx.navigation.NavController
 
 @Composable
-fun DiaryScreen() {
+fun DiaryScreen(navController: NavController, currentRoute: String) {
     val dropdownItems = listOf("Option 1", "Option 2", "Option 3")
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableStateOf(dropdownItems[0]) }
 
-    GrowellTheme {
+    GrowellTheme(darkTheme = false) {
         Scaffold(
             content = { innerPadding ->
                 Column(
@@ -392,7 +393,10 @@ fun DiaryScreen() {
                             Spacer(modifier = Modifier.padding(bottom = 8.dp))
                             Button(
                                 onClick = {},
-                                border = BorderStroke(1.dp, color = Color(0xFF029094).copy(alpha = 0.5f)),
+                                border = BorderStroke(
+                                    1.dp,
+                                    color = Color(0xFF029094).copy(alpha = 0.5f)
+                                ),
                                 colors = ButtonDefaults.buttonColors(Color.White),
                                 contentPadding = PaddingValues(vertical = 1.dp, horizontal = 16.dp),
                                 content = {
@@ -421,11 +425,16 @@ fun DiaryScreen() {
                             icon = {
                                 Icon(
                                     painter = painterResource(R.drawable.home_icon),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = if (currentRoute == "home_screen") Color(0xFF43ADA6) else Color.Gray
                                 )
                             },
-                            selected = false,
-                            onClick = {}
+                            selected = currentRoute == "home_screen",
+                            onClick = {
+                                navController.navigate("home_screen") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                }
+                            }
                         )
                         BottomNavigationItem(
                             icon = {
@@ -454,21 +463,31 @@ fun DiaryScreen() {
                             icon = {
                                 Icon(
                                     painter = painterResource(R.drawable.diary_icon),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = if (currentRoute == "diary_screen") Color(0xFF43ADA6) else Color.Gray
                                 )
                             },
-                            selected = false,
-                            onClick = {}
+                            selected = currentRoute == "diary_screen",
+                            onClick = {
+                                navController.navigate("diary_screen") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                }
+                            }
                         )
                         BottomNavigationItem(
                             icon = {
                                 Icon(
                                     painter = painterResource(R.drawable.profile_icon),
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = if (currentRoute == "profile_screen") Color(0xFF43ADA6) else Color.Gray
                                 )
                             },
-                            selected = false,
-                            onClick = {}
+                            selected = currentRoute == "profile_screen",
+                            onClick = {
+                                navController.navigate("profile_screen") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                }
+                            }
                         )
                     }
                     FloatingActionButton(
@@ -488,13 +507,5 @@ fun DiaryScreen() {
                 }
             }
         )
-    }
-}
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun DiaryScreenPreview() {
-    GrowellTheme {
-        DiaryScreen()
     }
 }

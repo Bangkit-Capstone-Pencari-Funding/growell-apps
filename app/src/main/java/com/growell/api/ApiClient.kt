@@ -1,5 +1,7 @@
 package com.growell.api
 
+import com.growell.model.DetailRecipeResponse
+import com.growell.model.ProfileResponse
 import com.growell.model.RecipeResponse
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -18,9 +20,13 @@ object ApiClient {
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
-
     suspend fun getRecipes(token: String?): Response<RecipeResponse> {
         val authorizationHeader = token?.let { "Bearer $it" } ?: ""
         return apiService.getRecipes(authorizationHeader)
+    }
+
+    suspend fun getProfile(token: String?): Response<ProfileResponse> {
+        val authorizationHeader = token?.let { "Bearer $it" } ?: ""
+        return apiService.getProfile(authorizationHeader)
     }
 }

@@ -1,27 +1,67 @@
 package com.growell.ui.screens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.growell.R
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.LoginRequest
+import com.growell.model.ProfileResponse
+import com.growell.model.UpdateProfileRequest
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun EditProfileScreen() {
+fun EditProfileScreen(navController: NavController) {
+    val context = LocalContext.current
+
+    val savedToken = SharedPrefsUtil.getToken(context)
+    var profile by remember { mutableStateOf<ProfileResponse?>(null) }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = ApiClient.getProfile(savedToken)
+            if (response.isSuccessful) {
+                val profileFromResponse = response.body()
+                Log.d("Profile", "Profile: $profileFromResponse")
+                profile = profileFromResponse
+                name = profile?.payload?.result?.name.toString()
+                email = profile?.payload?.result?.email.toString()
+                phone = profile?.payload?.result?.phone.toString()
+            } else {
+                // Handle error response
+            }
+        } catch (e: Exception) {
+            // Handle exception
+        }
+    }
     Column(
         horizontalAlignment = CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -61,21 +101,20 @@ fun EditProfileScreen() {
                 textAlign = TextAlign.Start
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = name,
+                onValueChange = { name = it },
                 label = { Text("Tuliskan Nama Lengkap") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,
                     unfocusedBorderColor = MaterialTheme.colors.onSurface
                 )
             )
+
             Spacer(modifier = Modifier.padding(bottom = 16.dp))
 
             Text(
@@ -86,15 +125,15 @@ fun EditProfileScreen() {
                 textAlign = TextAlign.Start
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = email,
+                onValueChange = { email = it },
                 label = { Text("Tuliskan Email Anda") },
+                readOnly = true,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,
@@ -104,57 +143,44 @@ fun EditProfileScreen() {
             Spacer(modifier = Modifier.padding(bottom = 16.dp))
 
             Text(
-                "Umur",
+                "Phone Number",
                 fontSize = 14.sp,
                 fontFamily = Poppins,
                 color = Color(0xFF695C5C),
                 textAlign = TextAlign.Start
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Tuliskan Umur Anda") },
+                value = phone,
+                onValueChange = { phone = it },
+                label = { Text("Tuliskan Nomor Telepon") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,
                     unfocusedBorderColor = MaterialTheme.colors.onSurface
                 )
             )
-            Spacer(modifier = Modifier.padding(bottom = 16.dp))
 
-            Text(
-                "Alamat",
-                fontSize = 14.sp,
-                fontFamily = Poppins,
-                color = Color(0xFF695C5C),
-                textAlign = TextAlign.Start
-            )
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Tuliskan Alamat Lengkap") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp),
-                shape = RoundedCornerShape(10.dp),
-                singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
-                textStyle = MaterialTheme.typography.body1,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = MaterialTheme.colors.primary,
-                    unfocusedBorderColor = MaterialTheme.colors.onSurface
-                )
-            )
             Spacer(modifier = Modifier.padding(bottom = 64.dp))
         }
         Button(
-            onClick = {},
+            onClick = {
+                if (savedToken != null) {
+                    updateProfile(name, phone, "Bearer $savedToken",
+                        onSuccess = {
+                            navController.navigate("profile_screen")
+                            Toast.makeText(context, "Update Profile Berhasil", Toast.LENGTH_SHORT).show()
+                        },
+                        onFailure = {
+                            Toast.makeText(context, "Update Profile Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            },
             colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6)),
             contentPadding = PaddingValues(vertical = 12.dp, horizontal = 24.dp)
         ) {
@@ -166,10 +192,37 @@ fun EditProfileScreen() {
     }
 }
 
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun EditProfileScreenPreview() {
-    GrowellTheme(darkTheme = false) {
-        EditProfileScreen()
+fun updateProfile(
+    name: String,
+    phone: String,
+    token: String,
+    onSuccess: () -> Unit,
+    onFailure: () -> Unit
+) {
+    val profileUpdateRequest = UpdateProfileRequest(name, phone)
+
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = ApiClient.apiService.updateProfile(token, profileUpdateRequest)
+            if (response.isSuccessful) {
+                val updateProfileResponse = response.body()
+                Log.d("Update Profile", "update berhasil $updateProfileResponse")
+                withContext(Dispatchers.Main) {
+                    onSuccess()
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Log.d("Update Profile", "Update gagal: ${response.errorBody()?.string()}")
+                    onFailure()
+                }
+            }
+
+        } catch (e: Exception) {
+            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
+            withContext(Dispatchers.Main) {
+                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
+                Log.d("update Profile", ": ${e.message}")
+            }
+        }
     }
 }

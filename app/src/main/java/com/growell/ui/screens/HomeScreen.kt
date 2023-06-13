@@ -37,7 +37,7 @@ import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, currentRoute: String) {
     val context = LocalContext.current
     val savedToken = SharedPrefsUtil.getToken(context)
 
@@ -189,26 +189,15 @@ fun HomeScreen(navController: NavController) {
                         RecipeListItem(
                             name = recipe.name,
                             rating = recipe.rating.toString(),
-                            image = recipe.picture
+                            image = recipe.picture,
+                            estimated_time = recipe.estimated_time.toString(),
+                            onClick = {
+                                navController.navigate("detail_recipe_screen/${recipe.id}")
+                            }
                         )
                     }
                 }
                 Spacer(modifier = Modifier.padding(25.dp))
-                Button(
-                    onClick = {
-                        SharedPrefsUtil.clearToken(context)
-                        navController.navigate("login_screen") {
-                            popUpTo("login_screen") { inclusive = true }
-                        }
-                    },
-                    modifier = Modifier.padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(Color.Red)
-                ) {
-                    Text(
-                        text = "Logout",
-                        color = Color.White
-                    )
-                }
             }
         },
         bottomBar = {
@@ -222,11 +211,16 @@ fun HomeScreen(navController: NavController) {
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.home_icon),
-                                contentDescription = null
+                                contentDescription = null,
+                                tint = if (currentRoute == "home_screen") Color(0xFF43ADA6) else Color.Gray
                             )
                         },
-                        selected = false,
-                        onClick = {}
+                        selected = currentRoute == "home_screen",
+                        onClick = {
+                            navController.navigate("home_screen") {
+                                popUpTo(navController.graph.startDestinationId)
+                            }
+                        }
                     )
                     BottomNavigationItem(
                         icon = {
@@ -255,21 +249,31 @@ fun HomeScreen(navController: NavController) {
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.diary_icon),
-                                contentDescription = null
+                                contentDescription = null,
+                                tint = if (currentRoute == "diary_screen") Color(0xFF43ADA6) else Color.Gray
                             )
                         },
-                        selected = false,
-                        onClick = {}
+                        selected = currentRoute == "diary_screen",
+                        onClick = {
+                            navController.navigate("diary_screen") {
+                                popUpTo(navController.graph.startDestinationId)
+                            }
+                        }
                     )
                     BottomNavigationItem(
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.profile_icon),
-                                contentDescription = null
+                                contentDescription = null,
+                                tint = if (currentRoute == "profile_screen") Color(0xFF43ADA6) else Color.Gray
                             )
                         },
-                        selected = false,
-                        onClick = {}
+                        selected = currentRoute == "profile_screen",
+                        onClick = {
+                            navController.navigate("profile_screen") {
+                                popUpTo(navController.graph.startDestinationId)
+                            }
+                        }
                     )
                 }
                 FloatingActionButton(

@@ -2,10 +2,7 @@ package com.growell.api
 
 import com.growell.model.*
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface ApiService {
     // LOGIN
@@ -19,4 +16,20 @@ interface ApiService {
     // GET RECIPE LIST HOME
     @GET("home")
     suspend fun getRecipes(@Header("Authorization") token: String): Response<RecipeResponse>
+
+    @GET("recipe/{recipeId}")
+    suspend fun getRecipeDetail(
+        @Path("recipeId") recipeId: String
+    ): Response<DetailRecipeResponse>
+
+    @GET("profile")
+    suspend fun getProfile(
+        @Header("Authorization") token: String
+    ): Response<ProfileResponse>
+
+    @PUT("profile")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Body request: UpdateProfileRequest
+    ): Response<UpdateProfileResponse>
 }

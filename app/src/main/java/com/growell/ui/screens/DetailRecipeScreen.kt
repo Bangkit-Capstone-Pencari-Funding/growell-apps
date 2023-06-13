@@ -1,5 +1,6 @@
 package com.growell.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,19 +11,46 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.growell.R
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.DetailRecipeResponse
+import com.growell.model.Recipe
+import com.growell.model.RecipeDetail
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 
 @Composable
-fun DetailRecipeScreen() {
+fun DetailRecipeScreen(recipeId: String?) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedChild by remember { mutableStateOf("") }
+
+    var recipe by remember { mutableStateOf<DetailRecipeResponse?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = recipeId?.let { ApiClient.apiService.getRecipeDetail(it) }
+            Log.d("detail recipe", "detail: ${response?.body()}")
+            if (response != null) {
+                if (response.isSuccessful) {
+                    val recipeDetail = response.body()
+                    if (recipeDetail != null) {
+                        recipe = recipeDetail
+                    }
+                } else {
+                    // Handle error response
+                }
+            }
+        } catch (e: Exception) {
+            // Handle exception
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -54,18 +82,22 @@ fun DetailRecipeScreen() {
                         .padding(16.dp)
                         .fillMaxHeight()
                 ) {
-                    Text(
-                        text = "Ide makanan pembuatan resep sandwich\n" + "sehat dan bergizi",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black,
-                        fontFamily = Poppins
-                    )
+                    recipe?.payload?.result?.name?.let {
+                        Text(
+                            text = it,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black,
+                            fontFamily = Poppins
+                        )
+                    }
                     Spacer(modifier = Modifier.padding(bottom = 30.dp))
-                    Text(
-                        "Berikut ini adalah resep sandwich sehat yang dapat kamu coba:\n" + "Bahan-bahan:\n" + "4 lembar roti gandum utuh\n" + "150 gram daging ayam rebus atau panggang, iris tipis\n" + "1 buah alpukat matang, dihaluskan\n" + "1 buah tomat, iris tipis\n" + "1/2 buah timun, iris tipis\n" + "Daun selada segar\n" + "2 sendok makan mayones rendah lemak\n" + "1 sendok teh mustard\n" + "Garam dan merica secukupnya\n" + "\n" + "Cara membuat:\n" + "Campurkan mayones dan mustard dalam sebuah wadah kecil. Aduk rata dan sisihkan.\n" + "Ambil selembar roti gandum, oleskan lapisan alpukat halus di atasnya.\n" + "Letakkan irisan daging ayam rebus atau panggang di atas lapisan alpukat.\n" + "Tambahkan irisan tomat, timun, dan daun selada di atas daging ayam.\n" + "Beri sedikit garam dan merica untuk memberi cita rasa pada sandwich.\n" + "Oleskan campuran mayones dan mustard yang sudah disiapkan di atas roti kedua.",
-                        fontSize = 11.sp, color = Color(0xFF4F4F4F), fontFamily = Poppins,
-                    )
+                    recipe?.payload?.result?.how_to?.let {
+                        Text(
+                            it,
+                            fontSize = 11.sp, color = Color(0xFF4F4F4F), fontFamily = Poppins,
+                        )
+                    }
                     Spacer(modifier = Modifier.padding(top = 40.dp))
                     Button(
                         onClick = { showDialog = true },
@@ -169,13 +201,5 @@ fun RadioButtonWithText(
             style = MaterialTheme.typography.body1,
             modifier = Modifier.padding(start = 8.dp)
         )
-    }
-}
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun DetailRecipeScreenPreview() {
-    GrowellTheme {
-        DetailRecipeScreen()
     }
 }

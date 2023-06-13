@@ -4,6 +4,7 @@ import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,14 +37,17 @@ import com.growell.ui.theme.Poppins
 fun RecipeListItem(
     name: String?,
     rating: String?,
+    estimated_time: String?,
     image: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .padding(16.dp)
             .background(Color.White, RoundedCornerShape(16.dp))
             .fillMaxWidth()
+            .clickable{onClick()}
     ) {
         Column(
             modifier = Modifier.padding(0.dp)
@@ -126,7 +130,7 @@ fun RecipeListItem(
                 )
                 Spacer(modifier = Modifier.padding(2.dp))
                 Text(
-                    text = "10 - 15 mins",
+                    text = "$estimated_time mins",
                     fontSize = 12.sp,
                     fontFamily = Poppins
                 )
