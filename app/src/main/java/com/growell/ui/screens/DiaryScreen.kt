@@ -1,7 +1,16 @@
 package com.growell.ui.screens
 
+import android.app.DatePickerDialog
+import android.app.Dialog
+import android.content.Context
 import android.graphics.DashPathEffect
 import android.graphics.Path
+import android.os.Build
+import android.os.Bundle
+import android.util.Log
+import android.widget.DatePicker
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,15 +40,114 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle.Companion.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
+import androidx.fragment.app.DialogFragment
 import androidx.navigation.NavController
+import com.growell.api.ApiClient
+import com.growell.data.SharedPrefsUtil
+import com.growell.model.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DiaryScreen(navController: NavController, currentRoute: String) {
-    val dropdownItems = listOf("Option 1", "Option 2", "Option 3")
+    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(dropdownItems[0]) }
+    var selectedOption by remember { mutableStateOf("Pilih Anak") }
+    var selectedChildId by remember { mutableStateOf("") }
+    var diaryData by remember { mutableStateOf<List<GetDiary>>(emptyList()) }
+
+    var caloriesNeeded by remember { mutableStateOf("") }
+
+    val mYear: Int
+    val mMonth: Int
+    val mDay: Int
+
+    // Initializing a Calendar
+    val mCalendar = Calendar.getInstance()
+
+    // Fetching current year, month and day
+    mYear = mCalendar.get(Calendar.YEAR)
+    mMonth = mCalendar.get(Calendar.MONTH)
+    mDay = mCalendar.get(Calendar.DAY_OF_MONTH)
+
+    mCalendar.time = Date()
+
+    // Declaring a string value to
+    // store date in string format
+    var mDate = remember { mutableStateOf("") }
+
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+    mDate.value = dateFormat.format(mCalendar.time)
+
+    val mDatePickerDialog = DatePickerDialog(
+        context,
+        { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
+            mDate.value = "$mYear-${mMonth + 1}-$mDayOfMonth"
+        }, mYear, mMonth, mDay
+    )
+
+    val savedToken = SharedPrefsUtil.getToken(context)
+    var children by remember { mutableStateOf<List<Children>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = ApiClient.getProfile(savedToken)
+            if (response.isSuccessful) {
+                val profileFromResponse = response.body()
+                Log.d("Profile", "Profile: $profileFromResponse")
+                children = profileFromResponse?.payload?.result?.children!!
+            } else {
+                // Handle error response
+            }
+        } catch (e: Exception) {
+            // Handle exception
+        }
+    }
+
+    var remainingCalories by remember { mutableStateOf(0) }
+    LaunchedEffect(diaryData) {
+        remainingCalories = if (caloriesNeeded.isNotEmpty()) {
+            val calories = caloriesNeeded.toIntOrNull()
+            if (calories != null) {
+                val totalCalories = calculateTotalCalories(diaryData)
+                val remaining = calories - totalCalories
+                if (remaining > 0) {
+                    remaining
+                } else {
+                    0
+                }
+            } else {
+                0
+            }
+        } else {
+            0
+        }
+    }
+//    LaunchedEffect(diaryData) {
+//        remainingCalories = if (caloriesNeeded.isNotEmpty()) {
+//            val calories = caloriesNeeded.toIntOrNull()
+//            if (calories != null) {
+//                calories - calculateTotalCalories(diaryData)
+//            } else {
+//                0
+//            }
+//        } else {
+//            0
+//        }
+//    }
+
 
     GrowellTheme(darkTheme = false) {
         Scaffold(
@@ -66,7 +174,8 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                 .padding(16.dp)
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable { mDatePickerDialog.show() }
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.arrow_left_gray),
@@ -75,13 +184,13 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Text(
-                                    text = "Yesterday",
+                                    text = mDate.value,
                                     modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.Center,
                                     color = Color.Black,
                                     fontFamily = FontFamily.Default,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontSize = 16.sp,
                                 )
                                 Icon(
                                     painter = painterResource(id = R.drawable.arrow_right_gray),
@@ -129,15 +238,17 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                             .fillMaxWidth()
                             .background(Color.White)
                     ) {
-                        dropdownItems.forEach { item ->
+                        children.forEach { item ->
                             DropdownMenuItem(
                                 onClick = {
-                                    selectedOption = item
+                                    selectedOption = item.name
+                                    selectedChildId = item.id
+                                    caloriesNeeded = item.calories_needed.toString()
                                     expanded = false
                                 }
                             ) {
                                 Text(
-                                    text = item,
+                                    text = item.name,
                                     color = Color.Black,
                                     fontFamily = FontFamily.Default,
                                     fontSize = 14.sp,
@@ -178,7 +289,7 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "1200",
+                                    text = caloriesNeeded.ifEmpty { "0" },
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black,
@@ -209,7 +320,7 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "330",
+                                    text = calculateTotalCalories(diaryData).toString(),
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black,
@@ -240,7 +351,7 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "970",
+                                    text = remainingCalories.toString(),
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black,
@@ -281,14 +392,14 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Breakfast",
+                                    text = "Total Food",
                                     modifier = Modifier.align(Alignment.CenterVertically),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     fontFamily = Poppins,
                                 )
                                 Text(
-                                    text = "330 Kkal",
+                                    text = calculateTotalCalories(diaryData).toString() + " Kkal",
                                     modifier = Modifier.align(Alignment.CenterVertically),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.SemiBold,
@@ -307,111 +418,73 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
                                 fontFamily = Poppins,
                             )
                             Spacer(modifier = Modifier.padding(top = 8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
+                            if (diaryData.isEmpty()) {
                                 Text(
-                                    text = "Biscuit Regal",
-                                    modifier = Modifier.align(Alignment.CenterVertically),
+                                    text = "Belum makan",
                                     fontSize = 10.sp,
                                     fontFamily = Poppins,
                                     color = Color(0xFF666666)
                                 )
-                                Text(
-                                    text = "300",
-                                    modifier = Modifier.align(Alignment.CenterVertically),
-                                    fontSize = 10.sp,
-                                    fontFamily = Poppins,
-                                    color = Color(0xFF666666)
-                                )
+                            } else {
+                                diaryData.map { diary ->
+                                    diary.recipe.map {recipe ->
+                                        val totalCalories = recipe.ingredients.sumBy { it.calories }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = recipe.name,
+                                                modifier = Modifier.align(Alignment.CenterVertically),
+                                                fontSize = 10.sp,
+                                                fontFamily = Poppins,
+                                                color = Color(0xFF666666)
+                                            )
+                                            Text(
+                                                text = totalCalories.toString(),
+                                                modifier = Modifier.align(Alignment.CenterVertically),
+                                                fontSize = 10.sp,
+                                                fontFamily = Poppins,
+                                                color = Color(0xFF666666)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                             Spacer(modifier = Modifier.padding(top = 8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Bebelac",
-                                    modifier = Modifier.align(Alignment.CenterVertically),
-                                    fontSize = 10.sp,
-                                    fontFamily = Poppins,
-                                    color = Color(0xFF666666)
-                                )
-                                Text(
-                                    text = "150",
-                                    modifier = Modifier.align(Alignment.CenterVertically),
-                                    fontSize = 10.sp,
-                                    fontFamily = Poppins,
-                                    color = Color(0xFF666666)
-                                )
-                            }
 
                         }
                     }
                     Spacer(modifier = Modifier.padding(top = 24.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(0.dp)
-                            .shadow(
-                                elevation = 30.dp,
-                                shape = RoundedCornerShape(10.dp),
-                                ambientColor = Color.Black.copy(alpha = 0.1f),
-                            )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .background(Color.White, RoundedCornerShape(10.dp))
-                                .padding(24.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Lunch",
-                                    modifier = Modifier.align(Alignment.CenterVertically),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontFamily = Poppins,
-                                )
-                                Text(
-                                    text = "300 Kkal",
-                                    modifier = Modifier.align(Alignment.CenterVertically),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontFamily = Poppins,
-                                    color = Color(0xFF43ADA6)
-                                )
-                            }
-                            Divider(
-                                color = Color(0xFFCACACA),
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
-                            )
-                            Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                            Button(
-                                onClick = {},
-                                border = BorderStroke(
-                                    1.dp,
-                                    color = Color(0xFF029094).copy(alpha = 0.5f)
-                                ),
-                                colors = ButtonDefaults.buttonColors(Color.White),
-                                contentPadding = PaddingValues(vertical = 1.dp, horizontal = 16.dp),
-                                content = {
-                                    Text(
-                                        text = "Add Food",
-                                        color = Color(0xFF029094),
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 8.sp
-                                    )
+                    Button(
+                        onClick = {
+                            getDiary(selectedChildId,
+                                mDate.value,
+                                "Bearer $savedToken",
+                                onSuccess = {
+                                    Toast.makeText(
+                                        context,
+                                        "Menampilkan diary $selectedOption",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    diaryData = it
+                                },
+                                onFailure = {
+                                    Toast.makeText(
+                                        context,
+                                        "Gagal menampilkan diary $selectedOption",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             )
-
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(Color(0xFF43ADA6))
+                    ) {
+                        Text(
+                            text = "Get Diary",
+                            color = Color.White
+                        )
                     }
-
                 }
             },
             bottomBar = {
@@ -509,3 +582,62 @@ fun DiaryScreen(navController: NavController, currentRoute: String) {
         )
     }
 }
+
+fun getDiary(
+    childId: String,
+    date: String,
+    token: String,
+    onSuccess: (List<GetDiary>) -> Unit,
+    onFailure: () -> Unit
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = ApiClient.apiService.getDiaryData(childId, date, token)
+            if (response.isSuccessful) {
+                val diaryResponse = response.body()
+                val diaryData = diaryResponse?.payload?.result
+                withContext(Dispatchers.Main) {
+                    if (diaryData != null) {
+                        onSuccess(diaryData)
+                    }
+                }
+                Log.d("GetDiary", "Diary: $diaryData")
+
+            } else {
+                withContext(Dispatchers.Main) {
+                    Log.d("GetDiary", "GetDiary gagal: ${response.errorBody()?.string()}")
+                    onFailure()
+                }
+            }
+
+            // Lakukan sesuatu dengan token, seperti menyimpannya di Preferences
+            // atau melanjutkan ke halaman berikutnya.
+
+        } catch (e: Exception) {
+            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
+            withContext(Dispatchers.Main) {
+                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
+                Log.d("login", "Login gagal ${e.message}")
+            }
+        }
+    }
+}
+
+fun calculateTotalCalories(diaryData: List<GetDiary>): Int {
+    var totalCalories = 0
+
+    for (getDiary in diaryData) {
+        val getRecipeList = getDiary.recipe
+
+        for (getRecipe in getRecipeList) {
+            val ingredientsList = getRecipe.ingredients
+
+            for (ingredient in ingredientsList) {
+                totalCalories += ingredient.calories
+            }
+        }
+    }
+
+    return totalCalories
+}
+

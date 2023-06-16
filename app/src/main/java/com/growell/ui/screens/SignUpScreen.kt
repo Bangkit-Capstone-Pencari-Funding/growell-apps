@@ -71,8 +71,7 @@ fun SignUpScreen(navController: NavController) {
                 onValueChange = { name = it },
                 label = { Text("Enter Your name") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
 //            keyboardOptions = KeyboardOptions(email = true),
@@ -88,8 +87,7 @@ fun SignUpScreen(navController: NavController) {
                 onValueChange = { email = it },
                 label = { Text("Enter Your Email") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -105,8 +103,7 @@ fun SignUpScreen(navController: NavController) {
                 onValueChange = { phone = it },
                 label = { Text("Enter Your Phone Number") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -122,8 +119,7 @@ fun SignUpScreen(navController: NavController) {
                 onValueChange = {password = it},
                 label = { Text("Enter Your Password") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,

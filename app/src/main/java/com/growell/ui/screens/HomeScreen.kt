@@ -61,7 +61,7 @@ fun HomeScreen(navController: NavController, currentRoute: String) {
     LaunchedEffect(Unit) {
         try {
             val response = ApiClient.getRecipes(savedToken)
-            if (response.isSuccessful == true) {
+            if (response.isSuccessful) {
                 val recipeList = response.body()?.payload?.recipe
                 Log.d("List Recipe", "list Recipe: $recipeList")
                 if (!recipeList.isNullOrEmpty()) {
@@ -277,7 +277,7 @@ fun HomeScreen(navController: NavController, currentRoute: String) {
                     )
                 }
                 FloatingActionButton(
-                    onClick = {},
+                    onClick = {navController.navigate("take_picture_screen")},
                     backgroundColor = Color(0xFF43ADA6),
                     contentColor = Color.White,
                     elevation = FloatingActionButtonDefaults.elevation(8.dp),

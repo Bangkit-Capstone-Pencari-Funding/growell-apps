@@ -16,14 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.growell.R
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
-import com.growell.model.DetailRecipeResponse
 import com.growell.model.ProfileResponse
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
@@ -139,7 +137,9 @@ fun ProfileScreen(navController: NavController, currentRoute: String) {
                         Divider()
                     }
 
-                    Column(modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp).clickable{
+                        navController.navigate("profile_child_screen")
+                    }) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,

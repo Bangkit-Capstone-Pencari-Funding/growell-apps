@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -110,7 +111,7 @@ fun SignInScreen(navController: NavController) {
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
-//            keyboardOptions = KeyboardOptions(email = true),
+                visualTransformation = PasswordVisualTransformation(),
                 textStyle = MaterialTheme.typography.body1,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colors.primary,

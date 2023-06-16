@@ -4,6 +4,7 @@ import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,15 +29,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.growell.R
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun RecipeListItemSmall(
-//    name: String?,
-//    rating: String?,
-//    image: String?,
+    name: String?,
+    rating: String?,
+    estimated_time: String?,
+    image: String?,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -44,6 +50,7 @@ fun RecipeListItemSmall(
             .padding(horizontal = 8.dp, vertical = 16.dp)
             .background(Color.White, RoundedCornerShape(16.dp))
             .fillMaxWidth()
+            .clickable{ onClick()}
     ) {
         Column(
             modifier = Modifier.padding(0.dp)
@@ -54,10 +61,11 @@ fun RecipeListItemSmall(
                     .fillMaxWidth()
                     .clip(shape = RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp))
             ) {
-                Image(
-                    painter = painterResource(R.drawable.image_food_1),
+                GlideImage(
+                    model = image,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
                 Box(
@@ -69,12 +77,14 @@ fun RecipeListItemSmall(
                         .padding(horizontal = 16.dp, vertical = 5.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "5.0",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
+                        if (rating != null) {
+                            Text(
+                                text = rating,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
                         Spacer(modifier = Modifier.padding(horizontal = 2.dp))
                         Icon(
                             painter = painterResource(R.drawable.star_icon),
@@ -92,12 +102,14 @@ fun RecipeListItemSmall(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 13.dp)
             ) {
-                Text(
-                    text = "Sandwich",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = Poppins
-                )
+                if (name != null) {
+                    Text(
+                        text = name,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Poppins
+                    )
+                }
                 Spacer(modifier = Modifier.padding(2.dp))
                 Image(
                     painter = painterResource(R.drawable.icon_checklist),
@@ -122,7 +134,7 @@ fun RecipeListItemSmall(
                 )
                 Spacer(modifier = Modifier.padding(2.dp))
                 Text(
-                    text = "10 - 15 mins",
+                    text = "$estimated_time mins",
                     fontSize = 9.sp,
                     fontFamily = Poppins
                 )
@@ -184,13 +196,5 @@ fun RecipeListItemSmall(
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RecipeItemListSmallPreview() {
-    GrowellTheme {
-        RecipeListItemSmall()
     }
 }

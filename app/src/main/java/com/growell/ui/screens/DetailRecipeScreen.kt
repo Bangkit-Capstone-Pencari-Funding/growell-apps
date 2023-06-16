@@ -3,6 +3,8 @@ package com.growell.ui.screens
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -14,24 +16,47 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.bundleOf
+import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.growell.R
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
-import com.growell.model.DetailRecipeResponse
-import com.growell.model.Recipe
-import com.growell.model.RecipeDetail
-import com.growell.ui.theme.GrowellTheme
+import com.growell.model.*
 import com.growell.ui.theme.Poppins
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun DetailRecipeScreen(recipeId: String?) {
+fun DetailRecipeScreen(recipeId: String?, navController: NavController) {
+    val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     var selectedChild by remember { mutableStateOf("") }
 
     var recipe by remember { mutableStateOf<DetailRecipeResponse?>(null) }
+
+    val savedToken = SharedPrefsUtil.getToken(context)
+    var children by remember { mutableStateOf<List<Children>>(emptyList()) }
+
+    var selectedChildId by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = ApiClient.getProfile(savedToken)
+            if (response.isSuccessful) {
+                val profileFromResponse = response.body()
+                Log.d("Profile", "Profile: $profileFromResponse")
+                children = profileFromResponse?.payload?.result?.children!!
+            } else {
+                // error response
+            }
+        } catch (e: Exception) {
+            // exception
+        }
+    }
 
     LaunchedEffect(Unit) {
         try {
@@ -44,17 +69,17 @@ fun DetailRecipeScreen(recipeId: String?) {
                         recipe = recipeDetail
                     }
                 } else {
-                    // Handle error response
+                    // error response
                 }
             }
         } catch (e: Exception) {
-            // Handle exception
+            // exception
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.asset_recipe1),
+        GlideImage(
+            model = recipe?.payload?.result?.picture,
             contentDescription = "Background Image",
             modifier = Modifier
                 .fillMaxWidth()
@@ -116,7 +141,7 @@ fun DetailRecipeScreen(recipeId: String?) {
             modifier = Modifier.padding(top = 16.dp, start = 16.dp)
         ) {
             IconButton(
-                onClick = { /* Aksi ketika tombol back ditekan */ },
+                onClick = { },
                 modifier = Modifier.background(Color.White, shape = CircleShape)
             ) {
                 Icon(
@@ -132,25 +157,32 @@ fun DetailRecipeScreen(recipeId: String?) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = {
-                Text(text = "Pilih Anak")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Pilih Anak",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             },
             text = {
-                Column {
-                    Text(
-                        text = "Pilih salah satu anak:",
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    RadioButtonWithText(
-                        text = "Anak 1",
-                        isSelected = selectedChild == "Anak 1",
-                        onSelected = { selectedChild = "Anak 1" }
-                    )
-                    RadioButtonWithText(
-                        text = "Anak 2",
-                        isSelected = selectedChild == "Anak 2",
-                        onSelected = { selectedChild = "Anak 2" }
-                    )
-                    // Tambahkan radio button anak lainnya di sini
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.padding(bottom = 12.dp))
+                    LazyColumn() {
+                        items(children) {
+                            RadioButtonWithText(
+                                text = it.name,
+                                isSelected = selectedChild == it.name,
+                                onSelected = {
+                                    selectedChild = it.name
+                                    selectedChildId = it.id
+                                }
+                            )
+                        }
+                    }
                 }
             },
             buttons = {
@@ -165,7 +197,10 @@ fun DetailRecipeScreen(recipeId: String?) {
                         Text(text = "Batal")
                     }
                     TextButton(
-                        onClick = { showDialog = false },
+                        onClick = {
+                            showDialog = false
+                            navController.navigate("success_cook_screen/$recipeId/$selectedChildId")
+                        },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
                         Text(text = "Pilih")
@@ -181,25 +216,32 @@ fun DetailRecipeScreen(recipeId: String?) {
 fun RadioButtonWithText(
     text: String,
     isSelected: Boolean,
-    onSelected: () -> Unit
+    onSelected: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { onSelected() }
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .clickable { onSelected() }
+            .padding(bottom = 12.dp)
     ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = null // Untuk mencegah radio button menjadi tidak responsif saat diklik pada Row
-        )
         Icon(
-            painter = painterResource(id = R.drawable.star_icon),
+            painter = painterResource(id = R.drawable.child_icon),
             contentDescription = null,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier
+                .height(20.dp)
+                .width(20.dp)
+                .padding(start = 8.dp)
         )
         Text(
             text = text,
-            style = MaterialTheme.typography.body1,
-            modifier = Modifier.padding(start = 8.dp)
+            fontSize = 14.sp,
+            fontFamily = Poppins,
+            modifier = Modifier.padding(horizontal = 15.dp)
+        )
+        RadioButton(
+            selected = isSelected,
+            onClick = null, // Untuk mencegah radio button menjadi tidak responsif saat diklik pada Row
         )
     }
 }

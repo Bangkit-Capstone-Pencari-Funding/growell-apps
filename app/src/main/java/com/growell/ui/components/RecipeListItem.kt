@@ -1,38 +1,27 @@
 package com.growell.ui.components
 
-import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.growell.R
-import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun RecipeListItem(
     name: String?,
@@ -42,26 +31,25 @@ fun RecipeListItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-            .background(Color.White, RoundedCornerShape(16.dp))
-            .fillMaxWidth()
-            .clickable{onClick()}
-    ) {
+    Box(modifier = Modifier
+        .padding(16.dp)
+        .background(Color.White, RoundedCornerShape(16.dp))
+        .fillMaxWidth()
+        .clickable { onClick() }) {
         Column(
             modifier = Modifier.padding(0.dp)
         ) {
             Box(
                 modifier = Modifier
                     .height(200.dp)
-                    .fillMaxWidth()
+                    .width(300.dp)
                     .clip(shape = RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp))
             ) {
-                Image(
-                    painter = painterResource(R.drawable.image_food_1),
+                GlideImage(
+                    model = image,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
                 Box(
@@ -103,7 +91,8 @@ fun RecipeListItem(
                         text = name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = Poppins
+                        fontFamily = Poppins,
+                        modifier = Modifier.widthIn(150.dp, 220.dp)
                     )
                 }
                 Spacer(modifier = Modifier.padding(2.dp))
@@ -130,9 +119,7 @@ fun RecipeListItem(
                 )
                 Spacer(modifier = Modifier.padding(2.dp))
                 Text(
-                    text = "$estimated_time mins",
-                    fontSize = 12.sp,
-                    fontFamily = Poppins
+                    text = "$estimated_time mins", fontSize = 12.sp, fontFamily = Poppins
                 )
             }
             Spacer(modifier = Modifier.padding(4.dp))
@@ -146,7 +133,9 @@ fun RecipeListItem(
                 ) {
                     Box(
                         modifier = Modifier
-                            .background(color = Color(0xFFD9FFEA), shape = RoundedCornerShape(8.dp))
+                            .background(
+                                color = Color(0xFFD9FFEA), shape = RoundedCornerShape(8.dp)
+                            )
                             .padding(horizontal = 15.dp)
                     ) {
                         Text(
@@ -160,7 +149,9 @@ fun RecipeListItem(
                     Spacer(modifier = Modifier.padding(horizontal = 2.dp))
                     Box(
                         modifier = Modifier
-                            .background(color = Color(0xFFD9FFEA), shape = RoundedCornerShape(8.dp))
+                            .background(
+                                color = Color(0xFFD9FFEA), shape = RoundedCornerShape(8.dp)
+                            )
                             .padding(horizontal = 15.dp)
                     ) {
                         Text(
@@ -182,11 +173,8 @@ fun RecipeListItem(
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Text(
-                        text = "Cook",
-                        style = MaterialTheme.typography.button.copy(
-                            fontSize = 12.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+                        text = "Cook", style = MaterialTheme.typography.button.copy(
+                            fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold
                         )
                     )
                 }

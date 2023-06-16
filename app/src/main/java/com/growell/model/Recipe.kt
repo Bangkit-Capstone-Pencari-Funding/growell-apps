@@ -17,6 +17,14 @@ data class RecipeResponse(
     val payload: PayloadRecipe
 )
 
+data class RecipeByIngredientsResponse(
+    val payload: PayloadRecipeByIngredients
+)
+
+data class PayloadRecipeByIngredients(
+    val result: List<Recipe>
+)
+
 data class PayloadRecipe(
     val recipe: List<Recipe>
 )

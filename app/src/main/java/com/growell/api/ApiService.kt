@@ -1,6 +1,8 @@
 package com.growell.api
 
 import com.growell.model.*
+import okhttp3.MultipartBody
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -38,4 +40,24 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: CreateChildRequest
     ): Response<CreateChildResponse>
+
+    @POST("recipe/{recipeId}/comments")
+    suspend fun createDiary(
+        @Header("Authorization") token: String,
+        @Path("recipeId") recipeId: String,
+        @Body request: DiaryRequest
+    ): Response<DiaryResponse>
+
+    @GET("diary/check/{childId}")
+    suspend fun getDiaryData(
+        @Path("childId") childId: String,
+        @Query("date") date: String,
+        @Header("Authorization") token: String
+    ): Response<GetDiaryPayload>
+
+    @GET("recipe")
+    suspend fun getRecipesByIngridients(
+        @Query("ingredients") ingredients: String,
+    ): Response<RecipeByIngredientsResponse>
+
 }
