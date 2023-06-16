@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -19,16 +18,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.growell.R
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
-import com.growell.model.CreateChildRequest
 import com.growell.model.DiaryRequest
-import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,8 +33,6 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun SuccessCookScreen(recipeId: String?, childId: String?, navController: NavController) {
-    Log.d("SUCCESS SCREEN", "recipe: $recipeId")
-    Log.d("SUCCESS SCREEN", "childId: $childId")
 
     val context = LocalContext.current
 
@@ -148,22 +142,17 @@ fun createDiary(
             val response = ApiClient.apiService.createDiary(token, recipeId, createDiaryRequest)
             if (response.isSuccessful) {
                 val createDiaryResponse = response.body()
-                Log.d("Create Diary", ": Berhasil : $createDiaryResponse")
                 withContext(Dispatchers.Main) {
                     onSuccess()
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("Create Diary", ": Gagal : ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
 
         } catch (e: Exception) {
-            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
-                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("Create Child", ": ${e.message}")
             }
         }
     }

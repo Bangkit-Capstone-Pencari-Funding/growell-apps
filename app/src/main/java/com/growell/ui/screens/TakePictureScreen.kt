@@ -6,15 +6,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -25,25 +21,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.growell.R
-import com.growell.api.ApiClient
 import com.growell.api.ApiClient2
-import com.growell.api.ApiService
-import com.growell.model.Children
-import com.growell.model.LoginRequest
 import com.growell.ui.theme.Poppins
 import com.growell.util.StorageFileUtil
 import kotlinx.coroutines.CoroutineScope
@@ -52,15 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
 
 var globalUri: Uri? = null
 
@@ -79,7 +60,6 @@ fun TakePictureScreen(navController: NavController) {
         if (activityResult.resultCode == Activity.RESULT_OK && result != null) {
             imageUriState.value = result.data
 //            imageUriState.value = globalUri
-            Log.d("URI", "${imageUriState.value}")
             Toast.makeText(context, "${imageUriState.value}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -272,23 +252,16 @@ fun submitImageToAnalyze(
                         onSuccess(token)
                     }
                 }
-                Log.d("login", "Login berhasil $token")
 
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("login", "Login gagal: ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
 
-            // Lakukan sesuatu dengan token, seperti menyimpannya di Preferences
-            // atau melanjutkan ke halaman berikutnya.
 
         } catch (e: Exception) {
-            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
-                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("login", "Login gagal ${e.message}")
             }
         }
     }

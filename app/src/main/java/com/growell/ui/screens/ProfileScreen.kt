@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -47,7 +46,6 @@ fun ProfileScreen(navController: NavController, currentRoute: String) {
             val response = ApiClient.getProfile(savedToken)
             if (response.isSuccessful) {
                 val profileFromResponse = response.body()
-                Log.d("Profile", "Profile: $profileFromResponse")
                 profile = profileFromResponse
             } else {
                 // Handle error response

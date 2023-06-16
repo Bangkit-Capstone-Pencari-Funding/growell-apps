@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,23 +7,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Bottom
-import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
 import com.growell.model.CreateChildRequest
-import com.growell.model.UpdateProfileRequest
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 import kotlinx.coroutines.CoroutineScope
@@ -230,22 +224,18 @@ fun createChild(
             val response = ApiClient.apiService.createChild(token, createChildRequest)
             if (response.isSuccessful) {
                 val updateProfileResponse = response.body()
-                Log.d("Create Child", ": Berhasil : $updateProfileResponse")
                 withContext(Dispatchers.Main) {
                     onSuccess()
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("Create Child", ": Gagal : ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
 
         } catch (e: Exception) {
-            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
-                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("Create Child", ": ${e.message}")
+
             }
         }
     }

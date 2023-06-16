@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +16,6 @@ import androidx.navigation.NavController
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
 import com.growell.model.Children
-import com.growell.model.ProfileResponse
 import com.growell.ui.components.ChildCard
 import com.growell.ui.theme.GrowellTheme
 
@@ -34,7 +32,6 @@ fun ProfileChildScreen(navController: NavController) {
             if (response.isSuccessful) {
                 val profileFromResponse = response.body()
                 children = profileFromResponse?.payload?.result?.children!!
-                Log.d("Child Profile", "Children: $children")
             } else {
                 // Handle error response
             }

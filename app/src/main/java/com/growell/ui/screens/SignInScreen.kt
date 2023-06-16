@@ -1,7 +1,5 @@
 package com.growell.ui.screens
 
-import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,8 +18,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.Navigation.createNavigateOnClickListener
-import androidx.navigation.Navigation.findNavController
 import com.growell.R
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
@@ -219,23 +215,15 @@ fun performLogin(
                 withContext(Dispatchers.Main) {
                     onSuccess(token ?: "")
                 }
-                Log.d("login", "Login berhasil $token")
 
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("login", "Login gagal: ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
 
-            // Lakukan sesuatu dengan token, seperti menyimpannya di Preferences
-            // atau melanjutkan ke halaman berikutnya.
-
         } catch (e: Exception) {
-            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
-                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("login", "Login gagal ${e.message}")
             }
         }
     }

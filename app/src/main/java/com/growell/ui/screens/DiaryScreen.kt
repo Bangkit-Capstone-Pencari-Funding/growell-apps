@@ -1,12 +1,7 @@
 package com.growell.ui.screens
 
 import android.app.DatePickerDialog
-import android.app.Dialog
-import android.content.Context
-import android.graphics.DashPathEffect
-import android.graphics.Path
 import android.os.Build
-import android.os.Bundle
 import android.util.Log
 import android.widget.DatePicker
 import android.widget.Toast
@@ -25,25 +20,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.growell.R
 import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Fill
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.Dp
-import androidx.fragment.app.DialogFragment
 import androidx.navigation.NavController
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
@@ -53,9 +37,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -601,23 +582,15 @@ fun getDiary(
                         onSuccess(diaryData)
                     }
                 }
-                Log.d("GetDiary", "Diary: $diaryData")
 
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("GetDiary", "GetDiary gagal: ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
 
-            // Lakukan sesuatu dengan token, seperti menyimpannya di Preferences
-            // atau melanjutkan ke halaman berikutnya.
-
         } catch (e: Exception) {
-            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
-                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("login", "Login gagal ${e.message}")
             }
         }
     }

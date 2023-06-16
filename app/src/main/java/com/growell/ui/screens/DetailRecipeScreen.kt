@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -48,7 +46,6 @@ fun DetailRecipeScreen(recipeId: String?, navController: NavController) {
             val response = ApiClient.getProfile(savedToken)
             if (response.isSuccessful) {
                 val profileFromResponse = response.body()
-                Log.d("Profile", "Profile: $profileFromResponse")
                 children = profileFromResponse?.payload?.result?.children!!
             } else {
                 // error response
@@ -61,7 +58,6 @@ fun DetailRecipeScreen(recipeId: String?, navController: NavController) {
     LaunchedEffect(Unit) {
         try {
             val response = recipeId?.let { ApiClient.apiService.getRecipeDetail(it) }
-            Log.d("detail recipe", "detail: ${response?.body()}")
             if (response != null) {
                 if (response.isSuccessful) {
                     val recipeDetail = response.body()

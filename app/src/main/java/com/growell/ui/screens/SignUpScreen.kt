@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -17,17 +16,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.growell.R
 import com.growell.api.ApiClient
 import com.growell.data.SharedPrefsUtil
-import com.growell.model.LoginRequest
 import com.growell.model.RegisterRequest
-import com.growell.ui.theme.GrowellTheme
 import com.growell.ui.theme.Poppins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -232,11 +227,9 @@ fun performRegister(
                 withContext(Dispatchers.Main) {
                     onSuccess(token ?: "")
                 }
-                Log.d("register", "Register berhasil $token")
 
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("register", "Register gagal: ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
@@ -248,7 +241,6 @@ fun performRegister(
             // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
                 // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("login", "Login gagal ${e.message}")
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.growell.ui.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -18,7 +17,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -50,7 +48,6 @@ fun EditProfileScreen(navController: NavController) {
             val response = ApiClient.getProfile(savedToken)
             if (response.isSuccessful) {
                 val profileFromResponse = response.body()
-                Log.d("Profile", "Profile: $profileFromResponse")
                 profile = profileFromResponse
                 name = profile?.payload?.result?.name.toString()
                 email = profile?.payload?.result?.email.toString()
@@ -206,22 +203,17 @@ fun updateProfile(
             val response = ApiClient.apiService.updateProfile(token, profileUpdateRequest)
             if (response.isSuccessful) {
                 val updateProfileResponse = response.body()
-                Log.d("Update Profile", "update berhasil $updateProfileResponse")
                 withContext(Dispatchers.Main) {
                     onSuccess()
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Log.d("Update Profile", "Update gagal: ${response.errorBody()?.string()}")
                     onFailure()
                 }
             }
 
         } catch (e: Exception) {
-            // Tangani kesalahan, misalnya menampilkan pesan kesalahan kepada pengguna.
             withContext(Dispatchers.Main) {
-                // Contoh: Menampilkan pesan kesalahan menggunakan Toast
-                Log.d("update Profile", ": ${e.message}")
             }
         }
     }
