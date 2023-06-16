@@ -9,6 +9,14 @@ GroWell is an Android Kotlin application that aims to promote healthy eating hab
 - **Child Nutritional Monitoring**: Track and monitor the daily nutritional needs of children to ensure their dietary requirements are met.
 - **Stunting Prevention**: GroWell emphasizes the importance of preventing child stunting by promoting healthy eating habits and providing well-balanced recipe options.
 - **User-Friendly Interface**: The app offers an intuitive and user-friendly interface to enhance the overall user experience.
+##Development
+
+**Requirements**
+- Windows computer
+- Android Studio
+- Android Virtual Device(AVD)> API 30
+
+**Dependencies**
 
 ## Usage
 Upon launching the GroWell app, you will be presented with the following features:
